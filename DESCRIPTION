@@ -11,6 +11,8 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Imports: 
-    frictionless
+    frictionless,
+    here,
+    data.table
 Suggests: 
     testhat (>= 3.0.0)
