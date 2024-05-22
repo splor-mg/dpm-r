@@ -1,0 +1,20 @@
+Package: dpm
+Title: What the Package Does (One Line, Title Case)
+Version: 0.1.0
+Authors@R: 
+    person("Francisco", "Alves", , "francisco.junior@planejamento.mg.gov.br", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person("Henrique", "Linhares", , "henrique.linhares@planejamento.mg.gov.br", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Retorna uma lista de dataframes com o conteúdo dos recursos de um datapackage.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports: 
+    frictionless,
+    here,
+    data.table
+Suggests: 
+    testhat (>= 3.0.0)
