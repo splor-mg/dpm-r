@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_datapackage.R
 \name{read_datapackage}
 \alias{read_datapackage}
-\title{Cria uma lista de dataframes contendo os recursos de um datapackage}
+\title{Criar uma lista de dataframes}
 \usage{
 read_datapackage(path)
 }
@@ -13,5 +13,5 @@ read_datapackage(path)
 Uma lista de dataframes
 }
 \description{
-Cria uma lista de dataframes contendo os recursos de um datapackage
+Faz a leitura de recursos de um datapackage e cria um lista de daframes
 }

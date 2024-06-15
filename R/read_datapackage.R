@@ -1,4 +1,4 @@
-#´ Criar uma lista de dataframes
+#' Criar uma lista de dataframes
 #'
 #' Faz a leitura de recursos de um datapackage e cria um lista de daframes
 #' @param path Arquivo datapackage
