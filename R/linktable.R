@@ -1,20 +1,12 @@
 #' @import data.table
 
-#' @export
-link <- function(df, key, cols) {
+create_link <- function(df, key_name, key_columns, ...) {
   dt <- as_data_table(df)
-  cols_to_drop <- setdiff(names(dt), cols)
+  cols_to_drop <- setdiff(names(dt), key_columns)
   dt[, (cols_to_drop) := NULL]
-  dt[, (key) := do.call(paste, c(.SD, sep = "|")), .SDcols = cols]
-  data.table::setcolorder(dt, key)
+  dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = key_columns]
+  data.table::setcolorder(dt, key_name)
   unique(dt)
-}
-
-safe_link <- purrr::safely(link)
-
-create_link_table <- function(datasets, keys) {
-  dt_transformed <- lapply(datasets, link, keys = keys)
-  unique(data.table::rbindlist(dt_transformed, fill = TRUE))
 }
 
 #' Create a Fact Table for Linktable Modelling
@@ -35,52 +27,13 @@ create_link_table <- function(datasets, keys) {
 #'   vl_receita_exec = c(60, 70, 80, 90, 100)
 #' )
 #'
-#' create_fact_table(df, key = list(chave_rec = c("uo_cod", "fonte_cod")))
-#' create_fact_table(df, key = list(chave_rec = c("uo_cod", "fonte_cod")), drop_columns = "uo_sigla")
-#'
-#' @export
-create_fact_table <- function(df, key, drop_columns = NULL) {
+#' create_fact_table(df, key_name = list(chave_rec = c("uo_cod", "fonte_cod")))
+#' create_fact_table(df, key_name = list(chave_rec = c("uo_cod", "fonte_cod")), drop_columns = "uo_sigla")
+create_fact_table <- function(df, key_name, key_columns, drop_columns = NULL) {
   dt <- as_data_table(df)
-  key_name <- names(key)
-  cols <- key[[key_name]]
-  if (!all(cols %in% names(dt))) {
-    dt[, (key_name) := NA_character_]
-    } else {
-      dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = cols]
-    }
-  cols_rm <- intersect(names(dt), unique(unlist(key)))
-  dt[, (c(cols_rm, drop_columns)) := NULL]
+  dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = key_columns]
+  dt[, (c(key_columns, drop_columns)) := NULL]
   data.table::setcolorder(dt, key_name)
   dt[]
 }
 
-create_fact_table_ <- function(resource_name, package_name, config) {
-  datapackage <- read_package(glue("datapackages/{package_name}/datapackage.json"))
-  resource <- read_resource(datapackage, resource_name) |> as.data.table()
-  key_name <- config$packages[[package_name]][[resource_name]]
-  create_fact_table(resource, config$keys[key_name])
-}
-
-create_fact_tables <- function(package_name, config) {
-  map(names(config$packages[[package_name]]), create_fact_table_, package_name, config)
-}
-
-#' @export
-linktable <- function() {
-  config <- RcppTOML::parseTOML("relationships.toml")
-
-  resource_names <- map(config$packages, names) |> unlist() |> unname()
-
-  fact_tables <- map(names(config$packages), create_fact_tables, config) |>
-    rrapply::rrapply(classes = "data.frame", how = "flatten") |>
-    set_names(resource_names)
-
-  resources <- map(names(config$packages), \(package_name) read_datapackage(glue("datapackages/{package_name}/datapackage.json"))) |>
-    rrapply::rrapply(classes = "data.frame", how = "flatten")
-
-  link_table <- create_link_table(resources, keys = config$keys)
-
-  fact_tables |> imap(\(value, key) fwrite(value, glue("data/{key}.csv")))
-
-  fwrite(link_table, "data/link.csv")
-}
