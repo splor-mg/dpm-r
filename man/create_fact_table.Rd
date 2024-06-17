@@ -2,14 +2,16 @@
 % Please edit documentation in R/linktable.R
 \name{create_fact_table}
 \alias{create_fact_table}
-\title{Create a Fact Table for Linktable Modelling}
+\title{Create a fact table for linktable modelling}
 \usage{
-create_fact_table(df, key, drop_columns = NULL)
+create_fact_table(df, key_name, key_columns, drop_columns = NULL)
 }
 \arguments{
 \item{df}{A frame to be transformed.}
 
-\item{key}{A named list where the name is used as the new key column's name, and the value is a character vector of columns to be concatenated.}
+\item{key_name}{A string with the new key column's name}
+
+\item{key_columns}{A character vector of columns to be concatenated to generate the new 'key_name' column}
 
 \item{drop_columns}{A character vector of additional columns to drop from the resulting data table. Defaults to NULL.}
 }
@@ -27,7 +29,6 @@ df <- data.frame(
   vl_receita_exec = c(60, 70, 80, 90, 100)
 )
 
-create_fact_table(df, key = list(chave_rec = c("uo_cod", "fonte_cod")))
-create_fact_table(df, key = list(chave_rec = c("uo_cod", "fonte_cod")), drop_columns = "uo_sigla")
-
+create_fact_table(df, key_name = "chave_rec", key_columns c("uo_cod", "fonte_cod"))
+create_fact_table(df, key_name = "chave_rec", key_columns c("uo_cod", "fonte_cod"), drop_columns = "uo_sigla")
 }
