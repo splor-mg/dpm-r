@@ -1,8 +1,12 @@
 #' @import data.table
 
 #' @export
-create_link <- function(df, key_name, key_columns, ...) {
+create_link <- function(df, key, ...) {
+  key_name <- names(key)
+  key_columns <- key[[key_name]]
+
   dt <- as_data_table(df)
+
   cols_to_drop <- setdiff(names(dt), key_columns)
   dt[, (cols_to_drop) := NULL]
   dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = key_columns]
@@ -12,21 +16,29 @@ create_link <- function(df, key_name, key_columns, ...) {
 
 #' @export
 create_linktable <- function(tables) {
-  transposed_tables <- purrr::list_transpose(tables)
-  result <- purrr::pmap(transposed_tables, create_link)
-  result <- dplyr::bind_rows(result) |> unique()
-  # https://stackoverflow.com/questions/55706560/make-rbindlist-skip-ignore-or-change-class-attribute-of-the-column
-  # data.table::rbindlist(fill = TRUE)
 
+  result <- tables |>
+            purrr::map(\(table) create_link(table$df, table$key)) |>
+            data.table::rbindlist(fill = TRUE) |>
+            unique()
 
-  data.table::setcolorder(result, unique(transposed_tables$key_name))
+  key_columns <- purrr::map(tables, \(table) names(table$key)) |>
+                unlist() |>
+                unique()
+  data.table::setcolorder(result, key_columns)
+
   result[]
 }
 
 
 #' @export
-create_fact_table <- function(df, key_name, key_columns, drop_columns = NULL) {
+create_fact_table <- function(df, key, drop_columns = NULL) {
+
+  key_name <- names(key)
+  key_columns <- key[[key_name]]
+
   dt <- as_data_table(df)
+
   dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = key_columns]
   dt[, (c(key_columns, drop_columns)) := NULL]
   data.table::setcolorder(dt, key_name)
@@ -35,6 +47,6 @@ create_fact_table <- function(df, key_name, key_columns, drop_columns = NULL) {
 
 #' @export
 create_fact_tables <- function(tables) {
-  transposed_tables <- purrr::list_transpose(tables)
-  purrr::pmap(transposed_tables, create_fact_table)
+  result <- purrr::map(tables, \(table) create_link(table$df, table$key))
+  result
 }
