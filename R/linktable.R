@@ -47,6 +47,6 @@ create_fact_table <- function(df, key, drop_columns = NULL) {
 
 #' @export
 create_fact_tables <- function(tables) {
-  result <- purrr::map(tables, \(table) create_link(table$df, table$key))
+  result <- purrr::map(tables, \(table) create_fact_table(table$df, table$key))
   result
 }
