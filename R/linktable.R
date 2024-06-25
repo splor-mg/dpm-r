@@ -1,7 +1,7 @@
 #' @import data.table
 
 #' @export
-create_link <- function(df, key, ...) {
+create_link <- function(df, key, keys) {
   key_name <- names(key)
   key_columns <- key[[key_name]]
 
@@ -10,22 +10,31 @@ create_link <- function(df, key, ...) {
   cols_to_drop <- setdiff(names(dt), key_columns)
   dt[, (cols_to_drop) := NULL]
   dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = key_columns]
-  data.table::setcolorder(dt, key_name)
+
   unique(dt)
+
+  for (key_name in names(config$keys)) {
+    key_columns <- config$keys[[key_name]]
+    if (all(key_columns %in% names(dt))) {
+      dt[,
+         (key_name) := do.call(paste, c(.SD, sep = "|")),
+         .SDcols = key_columns
+      ]
+    }
+  }
+  dt[]
 }
 
 #' @export
-create_linktable <- function(tables) {
+create_linktable <- function(tables, keys) {
 
   result <- tables |>
-            purrr::map(\(table) create_link(table$df, table$key)) |>
+            purrr::map(\(table) create_link(table$df, table$key, keys)) |>
             data.table::rbindlist(fill = TRUE) |>
             unique()
 
-  key_columns <- purrr::map(tables, \(table) names(table$key)) |>
-                unlist() |>
-                unique()
-  data.table::setcolorder(result, key_columns)
+
+  data.table::setcolorder(result, names(keys))
 
   result[]
 }
