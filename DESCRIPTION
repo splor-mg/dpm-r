@@ -1,6 +1,6 @@
 Package: dpm
 Title: What the Package Does (One Line, Title Case)
-Version: 0.1.0.9000
+Version: 0.1.1
 Authors@R: 
     person("Francisco", "Alves", , "francisco.junior@planejamento.mg.gov.br", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -16,9 +16,6 @@ Imports:
     frictionless,
     here,
     data.table,
-    relatorios,
-    data.table
+    purrr
 Suggests: 
     testhat (>= 3.0.0)
-Remotes: 
-    bitbucket::dcgf/relatorios
