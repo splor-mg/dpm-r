@@ -1,6 +1,6 @@
 Package: dpm
 Title: What the Package Does (One Line, Title Case)
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: 
     person("Francisco", "Alves", , "francisco.junior@planejamento.mg.gov.br", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -15,6 +15,10 @@ RoxygenNote: 7.3.1
 Imports: 
     frictionless,
     here,
+    data.table,
+    relatorios,
     data.table
 Suggests: 
     testhat (>= 3.0.0)
+Remotes: 
+    bitbucket::dcgf/relatorios
