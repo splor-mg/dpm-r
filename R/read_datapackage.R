@@ -11,7 +11,10 @@ read_datapackage <- function(path) {
   package <- suppressMessages(frictionless::read_package(path))
   resource_names <- frictionless::resources(package)
   result <- lapply(resource_names, function(resource_name) {
-    data.table::as.data.table(frictionless::read_resource(package, resource_name))
+    resource <- frictionless:::get_resource(package, resource_name)
+    if (isTRUE(resource$profile == "tabular-data-resource")) {
+      data.table::as.data.table(frictionless::read_resource(package, resource_name))
+    }
   })
   names(result) <- resource_names
   result
