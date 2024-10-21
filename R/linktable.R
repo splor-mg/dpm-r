@@ -9,9 +9,6 @@ create_link <- function(df, key, keys) {
 
   cols_to_drop <- setdiff(names(dt), key_columns)
   dt[, (cols_to_drop) := NULL]
-  dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = key_columns]
-
-  unique(dt)
 
   for (key_name in names(config$keys)) {
     key_columns <- config$keys[[key_name]]
@@ -22,7 +19,8 @@ create_link <- function(df, key, keys) {
       ]
     }
   }
-  dt[]
+  unique(dt)
+    dt[]
 }
 
 #' @export
