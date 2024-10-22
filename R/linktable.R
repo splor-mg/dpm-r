@@ -1,11 +1,16 @@
 #' @import data.table
+#' @import glue
 
 #' @export
-create_link <- function(df, key, keys) {
+create_link <- function(table, df, key, keys, table_name) {
   key_name <- names(key)
   key_columns <- key[[key_name]]
 
   dt <- as_data_table(df)
+
+  if(!all(key_columns %in% names(dt)))
+    msg <- paste0(key_columns[!key_columns %in% names(dt)], collapse = ', ')
+    stop(glue::glue("Coluna(s) '{msg}' em relationships.toml não está presente na base de dados '{table_name}', Criando chave nula."))
 
   cols_to_drop <- setdiff(names(dt), key_columns)
   dt[, (cols_to_drop) := NULL]
@@ -26,7 +31,7 @@ create_link <- function(df, key, keys) {
 #' @export
 create_linktable <- function(tables, keys) {
   result <- tables |>
-    purrr::map(\(table) create_link(table$df, table$key, keys)) |>
+    purrr::imap(\(table, table_name) create_link(table, table$df, table$key, keys, table_name)) |>
     data.table::rbindlist(fill = TRUE) |>
     unique()
 
