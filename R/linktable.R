@@ -1,5 +1,29 @@
 #' @import data.table
 #' @import glue
+#' @import RcppTOML
+
+#' @export
+create_tables <- function(relationships = 'relationships.toml') {
+
+    config <- parseTOML(relationships)
+    create_table <- function(resource) {
+    df <- dpm::read_datapackage(resource$path)
+    key_name <- resource$key_name
+    key <- config$keys[key_name]
+
+    list(
+      df = df,
+      key = key,
+      drop_columns = NULL
+    )
+  }
+
+  tables <- purrr::map(config$data, function(resource) {
+    create_table(resource)
+  })
+  return(tables)
+}
+
 
 #' @export
 create_link <- function(table, df, key, keys, table_name) {
