@@ -11,3 +11,53 @@ as_data_table <- function(df) {
   }
   result
 }
+
+create_tables <- function(relationships = 'relationships.toml') {
+  config <- parseTOML(relationships)
+  create_table <- function(resource, resource_name) {
+    df <- dpm::read_datapackage(resource$path) %>% .[[resource_name]]
+    key_name <- resource$key_name
+    key <- config$keys[key_name]
+    keys <- config$keys
+    list(
+      df = df,
+      key = key,
+      drop_columns = NULL
+    )
+  }
+  tables <- purrr::imap(config$data, function(resource, resource_name) {
+    create_table(resource, resource_name)
+  })
+
+  list(
+    tables = tables,
+    keys = config$keys
+  )
+}
+
+create_link <- function(table, df, key, keys, table_name) {
+
+  key_name <- names(key)
+  key_columns <- key[[key_name]]
+  dt <- as_data_table(df)
+
+  if (!all(key_columns %in% names(dt))) {
+    msg <- paste0(key_columns[!key_columns %in% names(dt)], collapse = ', ')
+    stop(glue::glue("Coluna(s) '{msg}' em relationships.toml não está presente na base de dados '{table_name}', Criando chave nula."))
+  }
+
+  cols_to_drop <- setdiff(names(dt), key_columns)
+  dt[, (cols_to_drop) := NULL]
+
+  for (key_name in names(keys)) {
+    key_columns <- keys[[key_name]]
+    if (all(key_columns %in% names(dt))) {
+      dt[,
+         (key_name) := do.call(paste, c(.SD, sep = "|")),
+         .SDcols = key_columns
+      ]
+    }
+  }
+  unique(dt)
+  dt[]
+}

@@ -2,58 +2,13 @@
 #' @import glue
 #' @import RcppTOML
 
-#' @export
-create_tables <- function(relationships = 'relationships.toml') {
-
-    config <- parseTOML(relationships)
-    create_table <- function(resource) {
-    df <- dpm::read_datapackage(resource$path)
-    key_name <- resource$key_name
-    key <- config$keys[key_name]
-
-    list(
-      df = df,
-      key = key,
-      drop_columns = NULL
-    )
-  }
-
-  tables <- purrr::map(config$data, function(resource) {
-    create_table(resource)
-  })
-  return(tables)
-}
-
 
 #' @export
-create_link <- function(table, df, key, keys, table_name) {
-  key_name <- names(key)
-  key_columns <- key[[key_name]]
+create_linktable <- function(relationships = 'relationships.toml'){
+  result <- create_tables(relationships)
+  tables <- result$tables
+  keys <- result$keys
 
-  dt <- as_data_table(df)
-
-  if(!all(key_columns %in% names(dt)))
-    msg <- paste0(key_columns[!key_columns %in% names(dt)], collapse = ', ')
-    stop(glue::glue("Coluna(s) '{msg}' em relationships.toml não está presente na base de dados '{table_name}', Criando chave nula."))
-
-  cols_to_drop <- setdiff(names(dt), key_columns)
-  dt[, (cols_to_drop) := NULL]
-
-  for (key_name in names(config$keys)) {
-    key_columns <- config$keys[[key_name]]
-    if (all(key_columns %in% names(dt))) {
-      dt[,
-        (key_name) := do.call(paste, c(.SD, sep = "|")),
-        .SDcols = key_columns
-      ]
-    }
-  }
-  unique(dt)
-    dt[]
-}
-
-#' @export
-create_linktable <- function(tables, keys) {
   result <- tables |>
     purrr::imap(\(table, table_name) create_link(table, table$df, table$key, keys, table_name)) |>
     data.table::rbindlist(fill = TRUE) |>
