@@ -15,6 +15,7 @@ create_linktable <- function(relationships = 'relationships.toml'){
     unique()
 
   data.table::setcolorder(result, names(keys))
+  fwrite(result, "data/link.csv")
 
   result[]
 }
@@ -41,21 +42,18 @@ create_linktable <- function(relationships = 'relationships.toml'){
 #' create_fact_table(df, key = list(chave_rec = c("uo_cod", "fonte_cod")))
 #' create_fact_table(df, key = list(chave_rec = c("uo_cod", "fonte_cod")), drop_columns = "uo_sigla")
 #'
-#' @export
-create_fact_table <- function(df, key, drop_columns = NULL) {
-  key_name <- names(key)
-  key_columns <- key[[key_name]]
 
-  dt <- as_data_table(df)
-
-  dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = key_columns]
-  dt[, (c(key_columns, drop_columns)) := NULL]
-  data.table::setcolorder(dt, key_name)
-  dt[]
-}
 
 #' @export
-create_fact_tables <- function(tables) {
-  result <- purrr::map(tables, \(table) create_fact_table(table$df, table$key))
-  result
+create_fact_tables <- function(relationships = 'relationships.toml') {
+  result <- create_tables(relationships)
+  tables <- result$tables
+
+  result <- tables |>
+    purrr::iwalk(function(table, name) {
+      fact_table <- create_fact_table(table$df, table$key, table$drop_columns)
+      fwrite(fact_table, glue::glue("data/{name}.csv"))
+    })
+
+  result[]
 }

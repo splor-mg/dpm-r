@@ -19,15 +19,15 @@ create_tables <- function(relationships = 'relationships.toml') {
     key_name <- resource$key_name
     key <- config$keys[key_name]
     keys <- config$keys
+
     list(
       df = df,
       key = key,
       drop_columns = NULL
     )
   }
-  tables <- purrr::imap(config$data, function(resource, resource_name) {
-    create_table(resource, resource_name)
-  })
+
+  tables <- config$data |> purrr::imap(create_table)
 
   list(
     tables = tables,
@@ -59,5 +59,17 @@ create_link <- function(table, df, key, keys, table_name) {
     }
   }
   unique(dt)
+  dt[]
+}
+
+create_fact_table <- function(df, key, drop_columns = NULL) {
+  key_name <- names(key)
+  key_columns <- key[[key_name]]
+
+  dt <- as_data_table(df)
+
+  dt[, (key_name) := do.call(paste, c(.SD, sep = "|")), .SDcols = key_columns]
+  dt[, (c(key_columns, drop_columns)) := NULL]
+  data.table::setcolorder(dt, key_name)
   dt[]
 }
