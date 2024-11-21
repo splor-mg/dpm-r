@@ -18,6 +18,7 @@ Imports:
     data.table,
     purrr,
     glue,
-    RcppTOML
+    RcppTOML,
+    magrittr
 Suggests: 
     testhat (>= 3.0.0)
