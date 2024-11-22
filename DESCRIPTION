@@ -1,6 +1,6 @@
 Package: dpm
 Title: What the Package Does (One Line, Title Case)
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: 
     person("Francisco", "Alves", , "francisco.junior@planejamento.mg.gov.br", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
