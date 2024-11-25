@@ -12,6 +12,13 @@ as_data_table <- function(df) {
   result
 }
 
+exporta_csv <- function(...) {
+  old_scipen <- getOption("scipen")
+  options(scipen = 999)
+  data.table::fwrite(..., sep = ";", dec = ",")
+  on.exit(options(scipen = old_scipen))
+}
+
 create_tables <- function(relationships = 'relationships.toml') {
   config <- parseTOML(relationships)
   create_table <- function(resource, resource_name) {
@@ -27,7 +34,7 @@ create_tables <- function(relationships = 'relationships.toml') {
     )
   }
 
-  tables <- config$data |> purrr::imap(create_table)
+  tables <- suppressWarnings(config$data |> purrr::imap(create_table))
 
   list(
     tables = tables,
