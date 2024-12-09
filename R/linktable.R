@@ -15,7 +15,7 @@ create_linktable <- function(relationships = 'relationships.toml'){
     unique()
 
   data.table::setcolorder(result, names(keys))
-  fwrite(result, "data/link.csv")
+  exporta_csv(result, "data/link.csv")
 
   result[]
 }
@@ -52,7 +52,7 @@ create_fact_tables <- function(relationships = 'relationships.toml') {
   result <- tables |>
     purrr::iwalk(function(table, name) {
       fact_table <- create_fact_table(table$df, table$key, table$drop_columns)
-      fwrite(fact_table, glue::glue("data/{name}.csv"))
+      exporta_csv(fact_table, glue::glue("data/{name}.csv"))
     })
 
   result[]
